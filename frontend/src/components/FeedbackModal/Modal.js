@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-
+import { postResponses } from "../../api/api";
 import { useStyles } from "./ModalCss";
 import {
     Box,
@@ -21,7 +21,7 @@ export default function BasicModal() {
     //on render pull questions via API
     useEffect(() => {
         setQuestions([
-            'Does your supervisor support you in doing you job?',
+            'Does your supervisor support you in doing your job?',
             'Are there adequate opportunities to grow and be challenged?',
             'Do you feel feedback and ideas for improvements are valued?',
         ]);
@@ -29,22 +29,27 @@ export default function BasicModal() {
 
 
     const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    const handleClose = () => { 
+        setOpen(false)
+        setActiveStep(0);
+        setCurrentResponse('');
+        setResponses([]);
+    };
     
     const handleNext = () => {
         //before going next, push current response to the responses and reset it
         setResponses([...responses, currentResponse]);
+        console.log(responses);
         setCurrentResponse('');
         setActiveStep(activeStep + 1);
     }
 
-    function handleSubmit() {
-        setResponses([...responses, currentResponse]);
+    async function handleSubmit() {
+        const finalResponses = [...responses, currentResponse];
+        await postResponses(questions, finalResponses);
         setCurrentResponse('');
-        
-        console.log("submit form!");
+        setActiveStep(0);
         setResponses([]);
-        // console.log(responses);
         setOpen(false);
     }
 
@@ -67,7 +72,7 @@ export default function BasicModal() {
                     <div className={classes.formHeader}>
                         <div className={classes.formTitle}>
                             <h2 className={classes.questionText}> Anonymous Survey</h2>
-                            <h4 className={classes.questionText}> Q3 2021 - Manager feeback</h4>
+                            <h4 className={classes.questionText}> Q3 2021 - Manager Feedback</h4>
                         </div>
                         <Button className={classes.exitButton} onClick={handleClose}>
                             <h5>Save for later</h5>
@@ -98,7 +103,7 @@ export default function BasicModal() {
                         {activeStep+1} / {questions.length}
                     </div>
                     {activeStep === questions.length - 1?
-                        <Button size='small' onClick={handleSubmit}>
+                        <Button size='small' onClick={() => handleSubmit()}>
                             submit
                         </Button> :
                         <Button size='small' onClick={handleNext}>
